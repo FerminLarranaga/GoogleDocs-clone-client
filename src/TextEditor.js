@@ -30,7 +30,7 @@ export default function TextEditor() {
     // Get the socket of server
     useEffect(() => {
         // Connect to the url the server is running
-        const s = io('http://localhost:3001');
+        const s = io('https://googledocs-clone-server.herokuapp.com');
         setSocket(s);
 
         return () => {
