@@ -5,7 +5,7 @@ import './styles.css';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router';
 
-// Personalize the tollbar options of quills
+// Personalizar las opciones de la toolbar
 const TOOLBAR_OPTIONS = [
     [{ header: [1, 2, 3, 4, 5, 6, false] }],
     [{ font: [] }],
@@ -21,15 +21,15 @@ const TOOLBAR_OPTIONS = [
 const SAVE_INTERVAL_MS = 2000;
 
 export default function TextEditor() {
-    // Get the id of document
+    // Obtener el id del coumento usando los parametros del link
     const {id: documentId} = useParams();
 
     const [socket,  setSocket] = useState();
     const [quill,  setQuill] = useState();
 
-    // Get the socket of server
+    // Obtener el socket del servidos
     useEffect(() => {
-        // Connect to the url the server is running
+        // Conectarse al servidor
         const s = io('https://googledocs-clone-server.herokuapp.com');
         setSocket(s);
 
@@ -38,28 +38,29 @@ export default function TextEditor() {
         }
     }, []);
 
-    // Load the doc from the server
+    // Cargar el documento desde el servidor
     useEffect(() => {
         if (socket == null || quill == null) return
 
         socket.once('load-document', document => {
             quill.setContents(document);
-            quill.enable()
+            quill.enable();
         });
 
         socket.emit('get-document', documentId);
+
     }, [socket,  quill, documentId]);
 
-    // Recieve changes if any change has been done
+    // Recivir cambios si los hay
     useEffect(() => {
         if (socket == null || quill == null) return
 
-        // Update quill's content with the changes that are being recieved from the server
+        // Actualizar el contenido del doc con los cambios recibidos del servidor
         const handler = (delta) => {
             quill.updateContents(delta);
         }
 
-        // If any change has been made, the server will automaticaly run handler giving it the change as parameter
+        // Si se hizo algun cambio, el servidor automaticamente ejecutara la funcion handler
         socket.on('recieve-changes', handler);
 
         return () => {
@@ -67,16 +68,16 @@ export default function TextEditor() {
         }
     }, [socket, quill]);
 
-    // Send changes if the current user has done so
+    // Enviar cambios al servidor si el usuario realizo alguno
     useEffect(() => {
         if (socket == null || quill == null) return
 
-        // Send the changes made by the current user to the server
+        // Enviar cambios
         const handler = (delta, oldDelta, source) => {
             if (source !== 'user') return
             socket.emit('send-changes', delta);
         }
-        // If any change is made on the Quill, it whill fire the handler func
+        // Si algun cambio fue realizado se ejecutara el handler
         quill.on('text-change', handler);
 
         return () => {
@@ -84,7 +85,7 @@ export default function TextEditor() {
         }
     }, [socket, quill]);
 
-    // Save doc after avery 2 secs
+    // Guardar doc cada 2 secs
     useEffect(() => {
         if (socket == null || quill == null) return
         
@@ -97,7 +98,7 @@ export default function TextEditor() {
         }
     }, [socket, quill]);
 
-    // Making sure Quill works properly with react, since is not a react component
+    // Adaptando Quill a React
     const wrapperRef = useCallback(wrapper => {
         if (wrapper == null) return
         wrapper.innerHTML = '';
@@ -106,7 +107,7 @@ export default function TextEditor() {
 
         const q = new Quill(editor, { theme: "snow", modules: { toolbar: TOOLBAR_OPTIONS }});
         q.disable();
-        q.setText('Loading...');
+        q.setText('Cargando...');
         setQuill(q);
     }, []);
 
